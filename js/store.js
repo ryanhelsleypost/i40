@@ -12,6 +12,8 @@ const STORE = (function () {
   const s = {
     favs:    read("i40_favs", []),
     custom:  read("i40_custom", []),
+    vias:    read("i40_vias", []),      // chosen detours (preset + custom)
+    route:   read("i40_route", null),   // built route: {geometry, distance, duration, steps, approx}
     fuel:    Object.assign({}, VEHICLE, read("i40_fuel", {})),
     budget:  Object.assign({}, budgetDefault, read("i40_budget", {})),
     expenses: read("i40_expenses", []), // {id, cat, amount, note, ts}
@@ -20,6 +22,8 @@ const STORE = (function () {
     save() {
       localStorage.setItem("i40_favs", JSON.stringify(this.favs));
       localStorage.setItem("i40_custom", JSON.stringify(this.custom));
+      localStorage.setItem("i40_vias", JSON.stringify(this.vias));
+      localStorage.setItem("i40_route", JSON.stringify(this.route));
       localStorage.setItem("i40_fuel", JSON.stringify(this.fuel));
       localStorage.setItem("i40_budget", JSON.stringify(this.budget));
       localStorage.setItem("i40_expenses", JSON.stringify(this.expenses));

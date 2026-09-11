@@ -44,13 +44,13 @@ h2.section{ font-size:1.15rem; font-weight:700; margin:4px 0 12px; }
 
 /* ---------- bottom nav ---------- */
 .nav{ position:fixed; bottom:0; left:0; right:0; height:var(--nav); z-index:800;
-  display:grid; grid-template-columns:repeat(5,1fr);
+  display:grid; grid-template-columns:repeat(6,1fr);
   background:var(--asphalt); border-top:1px solid #2c3a47;
   padding-bottom:env(safe-area-inset-bottom); }
 .nav button{ border:none; background:none; color:var(--muted); cursor:pointer;
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
-  font-size:.78rem; font-weight:600; }
-.nav button .ico{ font-size:1.5rem; line-height:1; }
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+  font-size:.72rem; font-weight:600; padding:0; }
+.nav button .ico{ font-size:1.35rem; line-height:1; }
 .nav button.on{ color:var(--amber); }
 
 /* ---------- map screen ---------- */
@@ -168,3 +168,18 @@ h2.section{ font-size:1.15rem; font-weight:700; margin:4px 0 12px; }
 .entry .where{ font-size:.85rem; color:var(--muted); margin-left:6px; }
 .entry .text{ font-size:1.02rem; line-height:1.45; margin:8px 0 0; white-space:pre-wrap; }
 .entry .del{ float:right; background:none; border:none; color:var(--muted); font-size:1.2rem; cursor:pointer; }
+
+/* ---------- plan / route builder ---------- */
+.chips{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 14px; }
+.chip{ padding:10px 14px; border-radius:999px; border:1.5px solid #3a4855; background:var(--asphalt-2);
+  color:var(--sign); font-family:var(--font); font-size:.95rem; font-weight:600; cursor:pointer; }
+.chip.on{ background:var(--green); border-color:var(--green); }
+.chip .x{ margin-left:6px; opacity:.8; }
+.pin--via{ background:var(--blue); border:3px solid #fff; border-radius:50%; width:16px; height:16px; }
+.summaryBox{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:8px 0 4px; }
+.summaryBox div{ background:var(--card); border-radius:12px; padding:12px; }
+.summaryBox .k{ font-size:.8rem; color:var(--muted); }
+.summaryBox .v{ font-size:1.3rem; font-weight:700; margin-top:2px; }
+.notice{ background:#3a2f10; border:1px solid var(--amber); color:#ffe6a8; border-radius:10px;
+  padding:10px 12px; font-size:.9rem; margin:12px 0; }
+.building{ opacity:.6; pointer-events:none; }

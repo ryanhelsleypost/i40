@@ -94,7 +94,38 @@ const MILESTONES = [
   { id: "asheville",  name: "Asheville, NC",            lat: 35.5951, lng:  -82.5515,
     blurb: "The Biltmore Estate and a famous downtown food-and-beer scene in the Blue Ridge." },
   { id: "wilmington", name: "Wilmington, NC - the finish", lat: 34.2257, lng: -77.9447,
-    blurb: "End of I-40. The battleship USS North Carolina and the Atlantic a few miles on." }
+    blurb: "End of I-40. The battleship USS North Carolina and the Atlantic a few miles on." },
+  { id: "vegas",      name: "Las Vegas, NV",              lat: 36.1147, lng: -115.1728,
+    blurb: "The Strip, old-school downtown Fremont Street, and Hoover Dam a short drive away." },
+  { id: "santa-fe",   name: "Santa Fe, NM",               lat: 35.6870, lng: -105.9378,
+    blurb: "Adobe plaza, galleries, and some of the best food in the Southwest." },
+  { id: "denver",     name: "Denver / Red Rocks, CO",     lat: 39.7392, lng: -104.9903,
+    blurb: "Mile-high city with Red Rocks amphitheatre carved into the foothills." },
+  { id: "wichita",    name: "Old Cowtown, Wichita KS",    lat: 37.6889, lng: -97.3831,
+    blurb: "Living-history frontier town on the Arkansas River. Very Kansas." },
+  { id: "kansas-city", name: "Kansas City, MO",           lat: 39.0997, lng:  -94.5786,
+    blurb: "Legendary barbecue, jazz history, and more fountains than any city but Rome." },
+  { id: "st-louis",   name: "Gateway Arch, St. Louis MO", lat: 38.6247, lng:  -90.1848,
+    blurb: "Ride the tram to the top of the 630-ft Arch on the Mississippi." },
+  { id: "branson",    name: "Branson, MO",                lat: 36.6437, lng:  -93.2185,
+    blurb: "Ozarks entertainment town - theaters, shows, and Table Rock Lake." }
+];
+
+// Trip endpoints.
+const DESTINATION = { name: "Wilmington, NC", lat: 34.2257, lng: -77.9447 };
+
+// Popular detours he can tap to route through. Each is a "pass-through" point;
+// the router threads real highways through the ones he picks, west to east.
+const DETOURS = [
+  { id: "vegas",       name: "Las Vegas, NV",   lat: 36.1699, lng: -115.1398 },
+  { id: "grand-canyon", name: "Grand Canyon, AZ", lat: 36.0544, lng: -112.1401 },
+  { id: "santa-fe",    name: "Santa Fe, NM",    lat: 35.6870, lng: -105.9378 },
+  { id: "denver",      name: "Denver, CO",      lat: 39.7392, lng: -104.9903 },
+  { id: "wichita",     name: "Wichita, KS",     lat: 37.6872, lng:  -97.3301 },
+  { id: "tulsa",       name: "Tulsa, OK",       lat: 36.1540, lng:  -95.9928 },
+  { id: "kansas-city", name: "Kansas City, MO", lat: 39.0997, lng:  -94.5786 },
+  { id: "branson",     name: "Branson, MO",     lat: 36.6437, lng:  -93.2185 },
+  { id: "st-louis",    name: "St. Louis, MO",   lat: 38.6270, lng:  -90.1994 }
 ];
 
 const VEHICLE = {
