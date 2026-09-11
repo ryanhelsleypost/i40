@@ -26,15 +26,16 @@
     <!-- MAP -->
     <section class="screen on" id="screen-map">
       <div id="map"></div>
-      <div class="statusCard">
+      <div class="statusCard idle" id="statusCard">
         <div class="shield" aria-hidden="true" style="width:46px;height:48px;">
           <b style="height:12px;"></b><i style="font-size:22px;">40</i>
         </div>
-        <div style="min-width:0;">
-          <p class="kick" id="statusKicker">Next stop</p>
-          <p class="name" id="nextName">Tap the target to begin</p>
-          <p class="dist" id="nextDist">Shows where you are along the route</p>
+        <div class="status__body">
+          <p class="kick" id="statusKicker">Your trip</p>
+          <p class="name" id="nextName">Ready to roll</p>
+          <p class="dist" id="nextDist">Press Start to follow your drive</p>
         </div>
+        <button id="startBtn" class="startBtn">&#9654; Start</button>
       </div>
       <button id="locate" aria-label="Find where I am on the route">&#9678;</button>
       <div id="hint">Tap the map to pin this stop</div>

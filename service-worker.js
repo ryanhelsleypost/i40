@@ -3,7 +3,7 @@
    the whole thing loads with zero signal. Map tiles are cached as they're
    viewed, so any stretch already looked at stays available in a dead zone. */
 
-const VERSION = "i40-v2";
+const VERSION = "i40-v3";
 const SHELL = VERSION + "-shell";
 const TILES = VERSION + "-tiles";
 

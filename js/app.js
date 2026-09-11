@@ -93,9 +93,19 @@ function updateStatus(lat, lng) {
   }
 }
 let watchId = null;
-$("#locate").addEventListener("click", () => {
-  if (!navigator.geolocation) { $("#nextName").textContent = "Location isn't available here"; return; }
+function startTracking() {
+  show("map");
+  if (!navigator.geolocation) {
+    $("#statusKicker").textContent = "Location is off";
+    $("#nextName").textContent = "This device can't share location";
+    $("#nextDist").textContent = "";
+    return;
+  }
+  $("#statusCard").classList.remove("idle");
   $("#locate").classList.add("on");
+  $("#statusKicker").textContent = "Starting";
+  $("#nextName").textContent = "Finding your spot…";
+  $("#nextDist").textContent = "";
   if (watchId !== null) navigator.geolocation.clearWatch(watchId);
   watchId = navigator.geolocation.watchPosition(pos => {
     const lat = pos.coords.latitude, lng = pos.coords.longitude;
@@ -106,11 +116,14 @@ $("#locate").addEventListener("click", () => {
     updateStatus(lat, lng);
   }, () => {
     $("#locate").classList.remove("on");
-    $("#statusKicker").textContent = "Couldn't get a fix";
-    $("#nextName").textContent = "Allow location, then tap again";
-    $("#nextDist").textContent = "";
+    $("#statusCard").classList.add("idle");
+    $("#statusKicker").textContent = "Location is off";
+    $("#nextName").textContent = "Turn on location";
+    $("#nextDist").textContent = "Then press Start again";
   }, { enableHighAccuracy: true, maximumAge: 15000, timeout: 20000 });
-});
+}
+$("#locate").addEventListener("click", startTracking);
+$("#startBtn").addEventListener("click", startTracking);
 
 /* add-stop toggle (lives on the Stops screen, pins on the map) */
 $("#addStop").addEventListener("click", () => {
