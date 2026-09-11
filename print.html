@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I-40 Road Trip — Driving Directions</title>
+<style>
+  @font-face { font-family:"Overpass"; src:url("fonts/overpass-400.woff2") format("woff2"); font-weight:400; }
+  @font-face { font-family:"Overpass"; src:url("fonts/overpass-700.woff2") format("woff2"); font-weight:700; }
+  @page { margin:16mm 14mm; }
+  *{ box-sizing:border-box; }
+  body{ font-family:"Overpass", Arial, sans-serif; color:#111; background:#fff; margin:0; padding:20px; line-height:1.4; }
+  .toolbar{ background:#1C2530; color:#fff; padding:12px 16px; border-radius:10px; display:flex; gap:10px; align-items:center; margin-bottom:20px; }
+  .toolbar b{ flex:1; }
+  .toolbar button{ font-family:inherit; font-size:15px; font-weight:700; padding:10px 16px; border:none; border-radius:8px; cursor:pointer; }
+  .print{ background:#F2A900; color:#3a2a00; }
+  .back{ background:transparent; color:#fff; border:1.5px solid #556 !important; }
+
+  h1{ font-size:24px; margin:0 0 2px; }
+  .route{ font-size:15px; color:#444; margin:0 0 4px; }
+  .gen{ font-size:12px; color:#888; margin:0 0 18px; }
+  .shield{ display:inline-block; width:34px; height:36px; background:#14396E; border:2px solid #111; border-radius:5px; color:#fff; text-align:center; vertical-align:middle; margin-right:8px; position:relative; }
+  .shield i{ font-style:normal; font-weight:700; font-size:17px; position:absolute; bottom:2px; left:0; right:0; }
+  .shield b{ display:block; height:8px; background:#C1272D; }
+
+  .summary{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:0 0 22px; }
+  .summary div{ border:1px solid #ccc; border-radius:8px; padding:10px; }
+  .summary .k{ font-size:11px; text-transform:uppercase; letter-spacing:.4px; color:#777; }
+  .summary .v{ font-size:19px; font-weight:700; margin-top:2px; }
+
+  h2{ font-size:16px; border-bottom:2px solid #111; padding-bottom:4px; margin:26px 0 10px; }
+  table{ width:100%; border-collapse:collapse; }
+  td, th{ text-align:left; padding:7px 6px; border-bottom:1px solid #ddd; font-size:13px; vertical-align:top; }
+  th{ font-size:11px; text-transform:uppercase; letter-spacing:.4px; color:#777; }
+  td.n{ width:34px; color:#888; font-weight:700; }
+  td.mi{ width:70px; text-align:right; white-space:nowrap; }
+  td.cum{ width:78px; text-align:right; white-space:nowrap; color:#555; }
+  .road{ font-weight:700; }
+  .stopnote{ color:#1E7A46; font-size:12px; }
+  ul{ margin:6px 0; padding-left:20px; }
+  li{ font-size:13px; margin:3px 0; }
+  .muted{ color:#777; }
+  .two{ display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  .fill{ display:inline-block; min-width:120px; border-bottom:1px solid #999; }
+
+  @media print { .toolbar{ display:none; } body{ padding:0; } }
+</style>
+</head>
+<body>
+  <div class="toolbar">
+    <b>Driving directions — ready to print</b>
+    <button class="print" onclick="window.print()">Print this page</button>
+    <button class="back" onclick="window.close()">Close</button>
+  </div>
+
+  <h1><span class="shield"><b></b><i>40</i></span>I-40 Road Trip</h1>
+  <p class="route" id="route"></p>
+  <p class="gen" id="gen"></p>
+
+  <div class="summary" id="summary"></div>
+
+  <h2>Turn-by-turn directions</h2>
+  <table><thead><tr><th></th><th>Follow</th><th class="mi">Leg</th><th class="cum">Total</th></tr></thead>
+    <tbody id="legs"></tbody></table>
+
+  <h2>Where to fill up (2024 Chevy Equinox)</h2>
+  <ul id="fuel"></ul>
+
+  <div class="two">
+    <div>
+      <h2>Points of interest</h2>
+      <ul id="poi"></ul>
+    </div>
+    <div>
+      <h2>My saved stops</h2>
+      <ul id="saved"></ul>
+    </div>
+  </div>
+
+  <h2>Budget</h2>
+  <table><thead><tr><th>Category</th><th class="mi">Planned</th><th class="mi">Spent</th></tr></thead>
+    <tbody id="budget"></tbody></table>
+
+  <script src="js/data.js"></script>
+  <script src="js/geo.js"></script>
+  <script src="js/store.js"></script>
+  <script>
+    const money = n => "$" + Math.round(Number(n)||0).toLocaleString();
+    document.getElementById("route").textContent = "From Mountain Ave & 13th St, Upland CA  to  Wilmington, NC";
+    document.getElementById("gen").textContent = "Prepared " + new Date().toLocaleDateString([], {month:"long", day:"numeric", year:"numeric"});
+
+    const f = STORE.fuel;
+    const gal = GEO.TOTAL / (f.mpgHwy || 30);
+    const summary = [
+      ["Total distance", GEO.fmtMi(GEO.TOTAL)],
+      ["Driving time", "\u2248 " + Math.round(GEO.drivingHours()) + " hours"],
+      ["Fuel needed", Math.round(gal) + " gal"],
+      ["Est. fuel cost", money(gal * (f.gasPrice||0))]
+    ];
+    document.getElementById("summary").innerHTML = summary.map(s =>
+      '<div><div class="k">'+s[0]+'</div><div class="v">'+s[1]+'</div></div>').join("");
+
+    // legs
+    const legs = GEO.legs();
+    document.getElementById("legs").innerHTML = legs.map((l, i) => {
+      let html = '<tr><td class="n">'+(i+1)+'</td><td><span class="road">'+l.road+'</span> to '+l.to;
+      if (l.stops.length) html += '<br><span class="stopnote">\u2605 near here: '+l.stops.join(", ")+'</span>';
+      html += '</td><td class="mi">'+l.seg+' mi</td><td class="cum">'+l.cum.toLocaleString()+' mi</td></tr>';
+      return html;
+    }).join("");
+
+    // fuel stops
+    const stops = GEO.fuelStops(Math.max(120, f.refuelEveryMi||300));
+    document.getElementById("fuel").innerHTML = stops.map((s,i) =>
+      '<li>Fill-up '+(i+1)+': <b>'+s.town+'</b> <span class="muted">(around mile '+s.mile.toLocaleString()+')</span></li>').join("")
+      || '<li class="muted">Set a refuel interval in the app.</li>';
+
+    // POIs
+    document.getElementById("poi").innerHTML = GEO.milestones.map(m =>
+      '<li><b>'+m.name+'</b> <span class="muted">— mile '+Math.round(m.along).toLocaleString()+'</span></li>').join("");
+
+    // saved (favorites + pinned)
+    const favs = GEO.milestones.filter(m => STORE.favs.includes(m.id)).map(m => '<li>\u2605 '+m.name+'</li>');
+    const pins = STORE.custom.map(c => '<li>\uD83D\uDCCD '+c.name+'</li>');
+    document.getElementById("saved").innerHTML = (favs.concat(pins).join("")) ||
+      '<li class="muted">Star stops or pin motels in the app and they\u2019ll appear here.</li>';
+
+    // budget
+    const spent = STORE.spentByCat();
+    document.getElementById("budget").innerHTML = CATEGORIES.map(c =>
+      '<tr><td>'+c+'</td><td class="mi">'+money(STORE.budget[c]||0)+'</td><td class="mi">'+money(spent[c]||0)+'</td></tr>').join("")
+      + '<tr><td><b>Total</b></td><td class="mi"><b>'+money(STORE.totalBudget())+'</b></td><td class="mi"><b>'+money(STORE.totalSpent())+'</b></td></tr>';
+  </script>
+</body>
+</html>

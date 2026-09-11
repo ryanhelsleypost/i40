@@ -1,12 +1,16 @@
-/* I-40 trip data — route waypoints (west → east) and curated milestones.
-   Coordinates are approximate and easy to fine-tune. Distances are computed
-   in app.js from the waypoint chain, so the route line and the mile figures
-   always agree. */
+/* I-40 trip data.
+   Route runs from his base at Mountain Ave & 13th St, Upland CA, up I-15 over
+   Cajon Pass to Barstow, then I-40 all the way east to Wilmington NC.
+   Coordinates are approximate and easy to fine-tune. Distances/mileposts are
+   computed in geo.js so the route line and every number stay in agreement. */
 
-// The I-40 corridor as an ordered chain of points, Barstow CA -> Wilmington NC.
-// I-40 dips south to Little Rock and back up, which the chain reflects.
+const BASE = { name: "Home — Mountain Ave & 13th St, Upland CA", lat: 34.1090, lng: -117.6553 };
+
 const ROUTE = [
-  { name: "Barstow, CA",        lat: 34.8958, lng: -117.0173 }, // I-40 begins at I-15
+  { name: "Upland, CA (home)",  lat: 34.1090, lng: -117.6553 },
+  { name: "Cajon Pass, CA",     lat: 34.3122, lng: -117.4720 },
+  { name: "Victorville, CA",    lat: 34.5362, lng: -117.2928 },
+  { name: "Barstow, CA",        lat: 34.8958, lng: -117.0173 },
   { name: "Needles, CA",        lat: 34.8481, lng: -114.6141 },
   { name: "Kingman, AZ",        lat: 35.1894, lng: -114.0530 },
   { name: "Seligman, AZ",       lat: 35.3258, lng: -112.8747 },
@@ -45,16 +49,16 @@ const ROUTE = [
   { name: "Durham, NC",         lat: 35.9940, lng:  -78.8986 },
   { name: "Raleigh, NC",        lat: 35.7796, lng:  -78.6382 },
   { name: "Benson, NC",         lat: 35.3821, lng:  -78.5486 },
-  { name: "Wilmington, NC",     lat: 34.2257, lng:  -77.9447 }  // I-40 ends
+  { name: "Wilmington, NC",     lat: 34.2257, lng:  -77.9447 }
 ];
 
-// Curated things worth stopping for, roughly west -> east. `at` is the point
-// to fly to; the app figures out how far along the route each one sits.
+const I40_JOIN = "Barstow, CA";
+
 const MILESTONES = [
   { id: "kingman",    name: "Kingman, AZ",              lat: 35.1894, lng: -114.0530,
     blurb: "Historic Route 66 town. Powerhouse Visitor Center and the Route 66 Museum." },
   { id: "grand-canyon", name: "Grand Canyon (South Rim)", lat: 36.0544, lng: -112.1401,
-    blurb: "About an hour north of Williams on AZ-64. The big one — worth the detour." },
+    blurb: "About an hour north of Williams on AZ-64. The big one - worth the detour." },
   { id: "williams",   name: "Williams, AZ",             lat: 35.2494, lng: -112.1910,
     blurb: "Gateway to the Grand Canyon and the Grand Canyon Railway. Classic Route 66 main street." },
   { id: "flagstaff",  name: "Flagstaff, AZ",            lat: 35.1983, lng: -111.6513,
@@ -62,7 +66,7 @@ const MILESTONES = [
   { id: "meteor-crater", name: "Meteor Crater",         lat: 35.0278, lng: -111.0225,
     blurb: "A 4,000-ft-wide impact crater just a few miles off the interstate. Genuinely staggering." },
   { id: "winslow",    name: "Winslow, AZ",              lat: 35.0242, lng: -110.6974,
-    blurb: "\"Standin' on the Corner\" park — yes, that corner, from the Eagles song." },
+    blurb: "\"Standin' on the Corner\" park - yes, that corner, from the Eagles song." },
   { id: "petrified-forest", name: "Petrified Forest & Painted Desert", lat: 34.9100, lng: -109.8068,
     blurb: "National park right off I-40 near Holbrook. Ancient petrified wood and banded desert." },
   { id: "wigwam",     name: "Wigwam Motel, Holbrook",   lat: 34.8994, lng: -110.1548,
@@ -72,9 +76,9 @@ const MILESTONES = [
   { id: "tucumcari",  name: "Tucumcari, NM",            lat: 35.1717, lng: -103.7250,
     blurb: "Peak Route 66 neon. The Blue Swallow Motel sign is the postcard shot." },
   { id: "cadillac-ranch", name: "Cadillac Ranch, Amarillo", lat: 35.1872, lng: -101.9871,
-    blurb: "Ten Cadillacs half-buried nose-down in a field. Bring spray paint — it's encouraged." },
+    blurb: "Ten Cadillacs half-buried nose-down in a field. Bring spray paint - it's encouraged." },
   { id: "big-texan",  name: "Big Texan Steak Ranch, Amarillo", lat: 35.1994, lng: -101.7601,
-    blurb: "Home of the free 72-oz steak — if you can finish it in an hour." },
+    blurb: "Home of the free 72-oz steak - if you can finish it in an hour." },
   { id: "okc",        name: "Oklahoma City, OK",        lat: 35.4676, lng:  -97.5164,
     blurb: "The National Memorial & Museum, plus the Stockyards for a real steakhouse." },
   { id: "little-rock", name: "Little Rock, AR",         lat: 34.7465, lng:  -92.2896,
@@ -89,6 +93,17 @@ const MILESTONES = [
     blurb: "Most-visited national park in the U.S., just south of the route near the TN/NC line." },
   { id: "asheville",  name: "Asheville, NC",            lat: 35.5951, lng:  -82.5515,
     blurb: "The Biltmore Estate and a famous downtown food-and-beer scene in the Blue Ridge." },
-  { id: "wilmington", name: "Wilmington, NC — the finish", lat: 34.2257, lng: -77.9447,
+  { id: "wilmington", name: "Wilmington, NC - the finish", lat: 34.2257, lng: -77.9447,
     blurb: "End of I-40. The battleship USS North Carolina and the Atlantic a few miles on." }
 ];
+
+const VEHICLE = {
+  name: "2024 Chevrolet Equinox",
+  engine: "1.5L turbo",
+  mpgHwy: 30,
+  tankGal: 14.9,
+  gasPrice: 3.75,
+  refuelEveryMi: 300
+};
+
+const CATEGORIES = ["Gas", "Food", "Lodging", "Tolls", "Souvenirs", "Misc"];
