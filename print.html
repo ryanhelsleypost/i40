@@ -53,6 +53,9 @@
   <p class="gen" id="gen"></p>
   <div class="summary" id="summary"></div>
 
+  <h2>Day-by-day plan</h2>
+  <div id="days"></div>
+
   <h2>Turn-by-turn directions</h2>
   <table><thead><tr><th></th><th>Follow</th><th class="mi">Leg</th><th class="cum">Total</th></tr></thead>
     <tbody id="legs"></tbody></table>
@@ -106,6 +109,36 @@
     ];
     document.getElementById("summary").innerHTML = summary.map(s =>
       '<div><div class="k">'+s[0]+'</div><div class="v">'+s[1]+'</div></div>').join("");
+
+    // day-by-day plan
+    (function(){
+      const perDay = STORE.milesPerDay || 450;
+      const mObj = STORE.meetup;
+      const segs = [];
+      if (mObj.enabled) {
+        const mmi = GEO.project(mObj.lat, mObj.lng).along;
+        segs.push({ title: "Leg 1 — his drive to " + mObj.name, days: GEO.planDays(0, mmi, perDay, "Home (Upland)", mObj.name) });
+        segs.push({ title: "Leg 2 — together to Wilmington", days: GEO.planDays(mmi, GEO.TOTAL, perDay, mObj.name, "Wilmington, NC") });
+      } else {
+        segs.push({ title: "", days: GEO.planDays(0, GEO.TOTAL, perDay, "Home (Upland)", "Wilmington, NC") });
+      }
+      const totalDays = segs.reduce((a,s)=>a+s.days.length,0);
+      let dayNo = 0, html = "";
+      segs.forEach(seg => {
+        if (seg.title) html += '<p style="font-weight:700;color:#14396E;margin:12px 0 4px;">'+seg.title+'</p>';
+        seg.days.forEach(d => {
+          dayNo++;
+          const last = dayNo === totalDays;
+          html += '<div style="border-left:3px solid #1E7A46;padding:4px 0 4px 10px;margin:6px 0;">'+
+            '<b>Day '+dayNo+':</b> '+d.from+' \u2192 <b>'+d.to+'</b> '+
+            '<span class="muted">('+d.miles.toLocaleString()+' mi, \u2248'+Math.round(d.hours)+' h)</span><br>'+
+            '<span class="muted">'+(last ? "Arrive "+d.to : "Overnight in "+d.to)+'</span>'+
+            (d.stops.length ? '<br><span class="stopnote">\u2605 '+d.stops.join(", ")+'</span>' : '')+
+            '</div>';
+        });
+      });
+      document.getElementById("days").innerHTML = html;
+    })();
 
     // directions
     const legs = GEO.directions();

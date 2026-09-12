@@ -197,3 +197,12 @@ h2.section{ font-size:1.15rem; font-weight:700; margin:4px 0 12px; }
   border-radius:50%; background:#fff; transition:left .2s; }
 .switch input:checked::after{ left:22px; }
 .pin--meet{ background:var(--blue); border:3px solid var(--amber); width:18px; height:18px; border-radius:50%; }
+
+/* ---------- day-by-day plan ---------- */
+.dayCard{ background:var(--card); border-radius:12px; padding:14px; margin:0 0 10px; border-left:4px solid var(--green); }
+.dayTop{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px; }
+.dayNo{ font-size:1.05rem; font-weight:700; color:var(--amber); }
+.dayMi{ font-size:.9rem; color:var(--muted); font-weight:600; }
+.dayRoute{ font-size:1.05rem; }
+.dayNight{ font-size:.9rem; color:var(--muted); margin-top:4px; }
+.dayStops{ font-size:.9rem; color:var(--green-lite); margin-top:6px; line-height:1.35; }

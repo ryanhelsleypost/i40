@@ -222,6 +222,7 @@ function renderPlan() {
   }
   renderMeetup();
   renderPlanResults();
+  renderDayPlan();
 }
 function legBlock(leg, title, fromLabel, toLabel) {
   const split = STORE.meetup.enabled;
@@ -325,6 +326,49 @@ function renderPlanResults() {
     })));
   }
 }
+function buildDayPlan() {
+  const perDay = STORE.milesPerDay || 450;
+  const m = STORE.meetup;
+  const segs = [];
+  if (m.enabled) {
+    const mm = GEO.project(m.lat, m.lng).along;
+    segs.push({ title: "Leg 1 — his drive to " + m.name, days: GEO.planDays(0, mm, perDay, "Home (Upland)", m.name) });
+    segs.push({ title: "Leg 2 — together to Wilmington", days: GEO.planDays(mm, GEO.TOTAL, perDay, m.name, "Wilmington, NC") });
+  } else {
+    segs.push({ title: "Your trip", days: GEO.planDays(0, GEO.TOTAL, perDay, "Home (Upland)", "Wilmington, NC") });
+  }
+  return segs;
+}
+function renderDayPlan() {
+  $("#perDay").value = STORE.milesPerDay || 450;
+  const segs = buildDayPlan();
+  const totalDays = segs.reduce((a, s) => a + s.days.length, 0);
+  $("#day-summary").textContent = totalDays + " days of driving at up to " + (STORE.milesPerDay || 450) + " miles a day.";
+  const wrap = $("#day-list"); wrap.innerHTML = "";
+  let dayNo = 0;
+  segs.forEach(seg => {
+    if (segs.length > 1) {
+      const h = document.createElement("p"); h.className = "legTitle"; h.style.margin = "14px 0 8px";
+      h.textContent = seg.title; wrap.appendChild(h);
+    }
+    seg.days.forEach(d => {
+      dayNo++;
+      const last = dayNo === totalDays;
+      const card = document.createElement("div"); card.className = "dayCard";
+      card.innerHTML =
+        '<div class="dayTop"><span class="dayNo">Day ' + dayNo + '</span>' +
+        '<span class="dayMi">' + d.miles.toLocaleString() + ' mi \u00b7 \u2248' + Math.round(d.hours) + ' h</span></div>' +
+        '<div class="dayRoute">' + d.from + ' \u2192 <b>' + d.to + '</b></div>' +
+        '<div class="dayNight">' + (last ? "\uD83C\uDFC1 Arrive " + d.to : "\uD83C\uDF19 Overnight in " + d.to) + '</div>' +
+        (d.stops.length ? '<div class="dayStops">\u2605 ' + d.stops.join("  \u00b7  ") + '</div>' : '');
+      wrap.appendChild(card);
+    });
+  });
+}
+$("#perDay").addEventListener("change", e => {
+  STORE.milesPerDay = Math.max(150, parseInt(e.target.value) || 450);
+  STORE.save(); renderDayPlan();
+});
 $("#resetRoute").addEventListener("click", () => {
   STORE.route = null; STORE.vias = []; STORE.save();
   loadActiveRoute(); drawRoute(); renderViaPins(); renderMeetup();

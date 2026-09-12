@@ -108,6 +108,29 @@ const GEO = (function () {
   const fuelStops = interval => sampleStops(Math.max(120, interval || 300));
   const overnightStops = interval => sampleStops(Math.max(200, interval || 450));
 
+  // Split a mile-range of the route into balanced driving days. Each day ends in
+  // a town (the overnight), never exceeds perDay miles, and lists the landmarks
+  // passed that day. startName/endName pin the first origin and final arrival.
+  function planDays(startMile, endMile, perDay, startName, endName) {
+    const span = Math.max(0, endMile - startMile);
+    const n = Math.max(1, Math.ceil(span / (perDay || 450)));
+    const step = span / n;
+    const avgSpeed = DUR ? (TOTAL / DUR) : 58;
+    const days = [];
+    let prevMile = startMile, prevName = startName;
+    for (let i = 1; i <= n; i++) {
+      const toMile = startMile + step * i;
+      let toName;
+      if (i === n && endName) toName = endName;
+      else { const pt = pointAt(toMile); const t = nearestTown(pt.lat, pt.lng); toName = t ? t.name : "the road"; }
+      const stops = MILE.filter(m => m.along > prevMile + 1 && m.along <= toMile + 1).map(m => m.name);
+      days.push({ from: prevName, to: toName, miles: Math.round(toMile - prevMile),
+        hours: (toMile - prevMile) / avgSpeed, stops, toMile: Math.round(toMile) });
+      prevMile = toMile; prevName = toName;
+    }
+    return days;
+  }
+
   // Highway-level directions. Uses router steps when available (collapsed by
   // road so it reads like a printed direction sheet); otherwise named waypoints.
   function directions() {
@@ -141,7 +164,7 @@ const GEO = (function () {
 
   return {
     build, project, pointAt, nearestTown, nearestPlace,
-    fuelStops, overnightStops, directions, drivingHours, fmtMi,
+    fuelStops, overnightStops, planDays, directions, drivingHours, fmtMi,
     get TOTAL() { return TOTAL; },
     get milestones() { return MILE; },
     points() { return PTS.map(p => [p.lat, p.lng]); }

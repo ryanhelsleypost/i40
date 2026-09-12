@@ -15,6 +15,7 @@ const STORE = (function () {
     vias:    read("i40_vias", []),      // chosen detours (each tagged with leg 1 or 2)
     route:   read("i40_route", null),   // built route: {geometry, distance, duration, steps, approx}
     meetup:  read("i40_meetup", Object.assign({ enabled: true }, MEETUP_DEFAULT)),
+    milesPerDay: read("i40_perday", 450),
     fuel:    Object.assign({}, VEHICLE, read("i40_fuel", {})),
     budget:  Object.assign({}, budgetDefault, read("i40_budget", {})),
     expenses: read("i40_expenses", []), // {id, cat, amount, note, ts}
@@ -26,6 +27,7 @@ const STORE = (function () {
       localStorage.setItem("i40_vias", JSON.stringify(this.vias));
       localStorage.setItem("i40_route", JSON.stringify(this.route));
       localStorage.setItem("i40_meetup", JSON.stringify(this.meetup));
+      localStorage.setItem("i40_perday", JSON.stringify(this.milesPerDay));
       localStorage.setItem("i40_fuel", JSON.stringify(this.fuel));
       localStorage.setItem("i40_budget", JSON.stringify(this.budget));
       localStorage.setItem("i40_expenses", JSON.stringify(this.expenses));
