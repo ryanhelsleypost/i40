@@ -41,6 +41,7 @@ let map = null, meMarker = null, routeLine = null, mapMode = null;
 const markerFor = {};
 const customLayer = L.layerGroup();
 const viaLayer = L.layerGroup();
+const milestoneLayer = L.layerGroup();
 
 const pinIcon = kind => L.divIcon({ className: "", html: '<div class="pin ' + kind + '"></div>', iconSize: [22, 22], iconAnchor: [11, 11] });
 const milestoneIcon = m => pinIcon(STORE.favs.includes(m.id) ? "pin--fav" : "");
@@ -50,12 +51,8 @@ function initMap() {
   L.control.zoom({ position: "topleft" }).addTo(map);
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
     { maxZoom: 18, attribution: "&copy; OpenStreetMap contributors" }).addTo(map);
+  milestoneLayer.addTo(map); customLayer.addTo(map); viaLayer.addTo(map);
   drawRoute();
-  MILESTONES.forEach(m => {
-    markerFor[m.id] = L.marker([m.lat, m.lng], { icon: milestoneIcon(m) })
-      .addTo(map).bindPopup("<strong>" + m.name + "</strong><br>" + m.blurb);
-  });
-  customLayer.addTo(map); viaLayer.addTo(map);
   renderCustomPins(); renderViaPins();
 
   map.on("click", e => {
@@ -79,7 +76,16 @@ function initMap() {
 function drawRoute() {
   if (routeLine) map.removeLayer(routeLine);
   routeLine = L.polyline(GEO.points(), { color: "#1E7A46", weight: 5, opacity: .9, lineJoin: "round" }).addTo(map);
+  renderMilestoneMarkers();
   try { map.fitBounds(routeLine.getBounds(), { padding: [28, 28] }); } catch (e) {}
+}
+function renderMilestoneMarkers() {
+  milestoneLayer.clearLayers();
+  for (const k in markerFor) delete markerFor[k];
+  GEO.milestones.forEach(m => {
+    markerFor[m.id] = L.marker([m.lat, m.lng], { icon: milestoneIcon(m) })
+      .addTo(milestoneLayer).bindPopup("<strong>" + m.name + "</strong><br>" + m.blurb);
+  });
 }
 function renderCustomPins() {
   customLayer.clearLayers();

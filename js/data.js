@@ -108,7 +108,27 @@ const MILESTONES = [
   { id: "st-louis",   name: "Gateway Arch, St. Louis MO", lat: 38.6247, lng:  -90.1848,
     blurb: "Ride the tram to the top of the 630-ft Arch on the Mississippi." },
   { id: "branson",    name: "Branson, MO",                lat: 36.6437, lng:  -93.2185,
-    blurb: "Ozarks entertainment town - theaters, shows, and Table Rock Lake." }
+    blurb: "Ozarks entertainment town - theaters, shows, and Table Rock Lake." },
+  { id: "sedona",     name: "Sedona, AZ",                 lat: 34.8697, lng: -111.7610,
+    blurb: "Red-rock canyons and jeep trails - one of the prettiest detours in the Southwest." },
+  { id: "taos",       name: "Taos, NM",                   lat: 36.4072, lng: -105.5731,
+    blurb: "Ancient adobe pueblo and a mountain arts town north of Santa Fe." },
+  { id: "hot-springs", name: "Hot Springs, AR",           lat: 34.5117, lng:  -93.0538,
+    blurb: "A national park built around historic downtown bathhouses and thermal springs." },
+  { id: "dallas",     name: "Dallas, TX",                 lat: 32.7767, lng:  -96.7970,
+    blurb: "Dealey Plaza and the Sixth Floor Museum, plus big-city Texas dining." },
+  { id: "new-orleans", name: "New Orleans, LA",           lat: 29.9584, lng:  -90.0644,
+    blurb: "French Quarter, live jazz, and beignets - a worthy swing down south." },
+  { id: "chattanooga", name: "Chattanooga, TN",           lat: 35.0456, lng:  -85.3097,
+    blurb: "Lookout Mountain, Rock City, and Ruby Falls above the Tennessee River." },
+  { id: "gatlinburg", name: "Gatlinburg, TN",             lat: 35.7143, lng:  -83.5102,
+    blurb: "The Smoky Mountains' front door - parkway, aerial tram, and Clingmans Dome nearby." },
+  { id: "atlanta",    name: "Atlanta, GA",                lat: 33.7490, lng:  -84.3880,
+    blurb: "The Georgia Aquarium, the MLK National Historical Park, and Southern city life." },
+  { id: "savannah",   name: "Savannah, GA",               lat: 32.0809, lng:  -81.0912,
+    blurb: "Oak-lined squares and one of the loveliest historic districts in the South." },
+  { id: "charleston", name: "Charleston, SC",             lat: 32.7765, lng:  -79.9311,
+    blurb: "Cobblestone streets, antebellum homes, and the Battery on the harbor." }
 ];
 
 // Trip endpoints.
@@ -125,7 +145,17 @@ const DETOURS = [
   { id: "tulsa",       name: "Tulsa, OK",       lat: 36.1540, lng:  -95.9928 },
   { id: "kansas-city", name: "Kansas City, MO", lat: 39.0997, lng:  -94.5786 },
   { id: "branson",     name: "Branson, MO",     lat: 36.6437, lng:  -93.2185 },
-  { id: "st-louis",    name: "St. Louis, MO",   lat: 38.6270, lng:  -90.1994 }
+  { id: "st-louis",    name: "St. Louis, MO",   lat: 38.6270, lng:  -90.1994 },
+  { id: "sedona",      name: "Sedona, AZ",      lat: 34.8697, lng: -111.7610 },
+  { id: "taos",        name: "Taos, NM",        lat: 36.4072, lng: -105.5731 },
+  { id: "dallas",      name: "Dallas, TX",      lat: 32.7767, lng:  -96.7970 },
+  { id: "hot-springs", name: "Hot Springs, AR", lat: 34.5117, lng:  -93.0538 },
+  { id: "new-orleans", name: "New Orleans, LA", lat: 29.9584, lng:  -90.0644 },
+  { id: "chattanooga", name: "Chattanooga, TN", lat: 35.0456, lng:  -85.3097 },
+  { id: "gatlinburg",  name: "Gatlinburg, TN",  lat: 35.7143, lng:  -83.5102 },
+  { id: "atlanta",     name: "Atlanta, GA",     lat: 33.7490, lng:  -84.3880 },
+  { id: "savannah",    name: "Savannah, GA",    lat: 32.0809, lng:  -81.0912 },
+  { id: "charleston",  name: "Charleston, SC",  lat: 32.7765, lng:  -79.9311 }
 ];
 
 const VEHICLE = {
