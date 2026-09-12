@@ -134,6 +134,9 @@ const MILESTONES = [
 // Trip endpoints.
 const DESTINATION = { name: "Wilmington, NC", lat: 34.2257, lng: -77.9447 };
 
+// Optional meetup / hand-off point that splits the trip into two legs.
+const MEETUP_DEFAULT = { name: "Nashville Airport (BNA)", lat: 36.1263, lng: -86.6774 };
+
 // Popular detours he can tap to route through. Each is a "pass-through" point;
 // the router threads real highways through the ones he picks, west to east.
 const DETOURS = [

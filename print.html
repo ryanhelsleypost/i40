@@ -91,7 +91,8 @@
       GEO.build(ROUTE.map(p => [p.lat, p.lng]), { factor: 1.10, named: ROUTE, landmarkThresholdMi: 75 });
     }
 
-    document.getElementById("route").textContent = "From Mountain Ave & 13th St, Upland CA  \u2022  " + pathNames;
+    document.getElementById("route").textContent = "From Mountain Ave & 13th St, Upland CA  \u2022  " + pathNames
+      + (r && r.meetup ? "  \u2022  daughter joins at " + r.meetup.name : "");
     document.getElementById("gen").textContent = "Prepared " + new Date().toLocaleDateString([], {month:"long", day:"numeric", year:"numeric"})
       + (r && r.approx ? "  \u2014  straight-line estimate (build on WiFi for real roads)" : "");
 
@@ -108,10 +109,17 @@
 
     // directions
     const legs = GEO.directions();
+    const mm = (r && r.meetup) ? GEO.project(r.meetup.lat, r.meetup.lng).along : null;
+    let inserted = false;
     document.getElementById("legs").innerHTML = legs.map((l, i) => {
+      let pre = "";
+      if (mm != null && !inserted && l.cum >= mm) {
+        inserted = true;
+        pre = '<tr><td></td><td colspan="3" style="background:#eef4ff;border-left:4px solid #14396E;font-weight:700;">\u2708 Meet up: '+r.meetup.name+' \u2014 around mile '+Math.round(mm).toLocaleString()+' (daughter joins here)</td></tr>';
+      }
       const follow = l.to ? ('<span class="road">'+l.road+'</span> to '+l.to)
                           : ('Continue on <span class="road">'+l.road+'</span>');
-      let html = '<tr><td class="n">'+(i+1)+'</td><td>'+follow;
+      let html = pre + '<tr><td class="n">'+(i+1)+'</td><td>'+follow;
       if (l.stops && l.stops.length) html += '<br><span class="stopnote">\u2605 near here: '+l.stops.join(", ")+'</span>';
       html += '</td><td class="mi">'+l.seg+' mi</td><td class="cum">'+l.cum.toLocaleString()+' mi</td></tr>';
       return html;

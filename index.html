@@ -49,9 +49,11 @@
     <section class="screen scroll" id="screen-plan">
       <h2 class="section">Plan the route</h2>
       <p class="lead">Start at home in Upland, finish in Wilmington. Tap any detours you'd like to swing through, then build the route. You only need internet for this one step &mdash; after that it works with no signal.</p>
-      <div class="chips" id="detour-chips"></div>
-      <button class="btn btn--ghost" id="addVia">&#43; Add a place by tapping the map</button>
-      <div id="via-list" style="margin-top:6px;"></div>
+      <div class="card">
+        <label class="switch"><input type="checkbox" id="meetup-toggle"><span>Daughter joins at Nashville Airport</span></label>
+        <p class="sub" id="meetup-note" style="margin:10px 0 0;"></p>
+      </div>
+      <div id="plan-legs"></div>
       <button class="btn" id="buildRoute">Build my route</button>
       <p class="lead" id="build-status" style="margin-top:12px;"></p>
       <div id="route-summary"></div>

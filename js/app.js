@@ -37,11 +37,12 @@ function loadActiveRoute() {
 }
 
 /* ---------- map ---------- */
-let map = null, meMarker = null, routeLine = null, mapMode = null;
+let map = null, meMarker = null, routeLine = null, mapMode = null, pendingViaLeg = 1;
 const markerFor = {};
 const customLayer = L.layerGroup();
 const viaLayer = L.layerGroup();
 const milestoneLayer = L.layerGroup();
+const meetupLayer = L.layerGroup();
 
 const pinIcon = kind => L.divIcon({ className: "", html: '<div class="pin ' + kind + '"></div>', iconSize: [22, 22], iconAnchor: [11, 11] });
 const milestoneIcon = m => pinIcon(STORE.favs.includes(m.id) ? "pin--fav" : "");
@@ -51,9 +52,9 @@ function initMap() {
   L.control.zoom({ position: "topleft" }).addTo(map);
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
     { maxZoom: 18, attribution: "&copy; OpenStreetMap contributors" }).addTo(map);
-  milestoneLayer.addTo(map); customLayer.addTo(map); viaLayer.addTo(map);
+  milestoneLayer.addTo(map); customLayer.addTo(map); viaLayer.addTo(map); meetupLayer.addTo(map);
   drawRoute();
-  renderCustomPins(); renderViaPins();
+  renderCustomPins(); renderViaPins(); renderMeetup();
 
   map.on("click", e => {
     if (!mapMode) return;
@@ -66,11 +67,12 @@ function initMap() {
     } else if (mapMode === "via") {
       const name = prompt("Name this place to pass through:", "");
       if (name && name.trim()) {
-        STORE.vias.push({ id: "v" + Date.now(), name: name.trim(), lat: e.latlng.lat, lng: e.latlng.lng, custom: true });
+        STORE.vias.push({ id: "v" + Date.now(), name: name.trim(), lat: e.latlng.lat, lng: e.latlng.lng,
+          leg: STORE.meetup.enabled ? pendingViaLeg : 1, custom: true });
         STORE.save(); renderPlan(); renderViaPins(); show("plan");
       }
     }
-    mapMode = null; $("#addStop").classList.remove("on"); $("#addVia").classList.remove("on"); $("#hint").classList.remove("on");
+    mapMode = null; $("#addStop").classList.remove("on"); $$(".addViaBtn").forEach(x => x.classList.remove("on")); $("#hint").classList.remove("on");
   });
 }
 function drawRoute() {
@@ -96,6 +98,13 @@ function renderViaPins() {
   viaLayer.clearLayers();
   STORE.vias.forEach(v => L.marker([v.lat, v.lng], { icon: pinIcon("pin--via") })
     .addTo(viaLayer).bindPopup("<strong>" + v.name + "</strong><br>detour"));
+}
+function renderMeetup() {
+  meetupLayer.clearLayers();
+  if (STORE.meetup.enabled) {
+    L.marker([STORE.meetup.lat, STORE.meetup.lng], { icon: pinIcon("pin--meet"), zIndexOffset: 900 })
+      .addTo(meetupLayer).bindPopup("<strong>Meet up here</strong><br>" + STORE.meetup.name);
+  }
 }
 function flyTo(lat, lng) { show("map"); map.setView([lat, lng], 11, { animate: true }); }
 
@@ -199,39 +208,80 @@ $("#addStop").addEventListener("click", () => {
 
 /* ---------- Plan / route builder ---------- */
 function renderPlan() {
-  const chips = $("#detour-chips"); chips.innerHTML = "";
+  const m = STORE.meetup;
+  $("#meetup-toggle").checked = !!m.enabled;
+  $("#meetup-note").textContent = m.enabled
+    ? "Two legs: his drive out to " + m.name + ", then the two of them on to Wilmington. Pick detours for each."
+    : "One leg: Upland straight through to Wilmington.";
+  const host = $("#plan-legs"); host.innerHTML = "";
+  if (m.enabled) {
+    host.appendChild(legBlock(1, "Leg 1 \u2014 Home to Nashville", "Upland", m.name));
+    host.appendChild(legBlock(2, "Leg 2 \u2014 Nashville to Wilmington", m.name, "Wilmington"));
+  } else {
+    host.appendChild(legBlock(1, "Your route", "Upland", "Wilmington"));
+  }
+  renderMeetup();
+  renderPlanResults();
+}
+function legBlock(leg, title, fromLabel, toLabel) {
+  const split = STORE.meetup.enabled;
+  const inLeg = v => split ? (v.leg || 1) === leg : true;
+  const wrap = document.createElement("div"); wrap.className = "leg";
+  const h = document.createElement("h3"); h.className = "legTitle"; h.textContent = title; wrap.appendChild(h);
+  const chips = document.createElement("div"); chips.className = "chips";
   DETOURS.forEach(d => {
-    const on = STORE.vias.some(v => v.id === d.id);
+    const on = STORE.vias.some(v => v.id === d.id && inLeg(v));
     const b = document.createElement("button");
     b.className = "chip" + (on ? " on" : "");
     b.textContent = d.name + (on ? "  \u2713" : "");
-    b.onclick = () => {
-      const i = STORE.vias.findIndex(v => v.id === d.id);
-      if (i >= 0) STORE.vias.splice(i, 1);
-      else STORE.vias.push({ id: d.id, name: d.name, lat: d.lat, lng: d.lng });
-      STORE.save(); renderPlan(); renderViaPins();
-    };
+    b.onclick = () => toggleVia(d, leg);
     chips.appendChild(b);
   });
-
-  const vl = $("#via-list"); vl.innerHTML = "";
-  const ordered = STORE.vias.slice().sort((a, b) => a.lng - b.lng);
-  if (ordered.length) {
-    const label = document.createElement("p"); label.className = "lead";
-    label.style.margin = "6px 0"; label.innerHTML = "<b>Your path:</b> Upland \u2192 " +
-      ordered.map(v => v.name).join(" \u2192 ") + " \u2192 Wilmington";
-    vl.appendChild(label);
-  }
-  renderPlanResults();
+  wrap.appendChild(chips);
+  const add = document.createElement("button"); add.className = "btn btn--ghost addViaBtn";
+  add.textContent = "\u002B Add a place by tapping the map";
+  add.onclick = () => {
+    pendingViaLeg = leg;
+    const turnOn = mapMode !== "via";
+    mapMode = turnOn ? "via" : null;
+    $$(".addViaBtn").forEach(x => x.classList.remove("on"));
+    if (turnOn) { add.classList.add("on"); show("map"); $("#hint").textContent = "Tap the map to add a place to pass through"; $("#hint").classList.add("on"); }
+    else $("#hint").classList.remove("on");
+  };
+  wrap.appendChild(add);
+  const chosen = STORE.vias.filter(inLeg).slice().sort((a, b) => a.lng - b.lng);
+  const p = document.createElement("p"); p.className = "lead"; p.style.margin = "10px 0 0";
+  p.innerHTML = "<b>" + fromLabel + "</b> \u2192 " + (chosen.length ? chosen.map(v => v.name).join(" \u2192 ") + " \u2192 " : "") + "<b>" + toLabel + "</b>";
+  wrap.appendChild(p);
+  return wrap;
 }
+function toggleVia(d, leg) {
+  const split = STORE.meetup.enabled;
+  const useLeg = split ? leg : 1;
+  const i = STORE.vias.findIndex(v => v.id === d.id && (split ? (v.leg || 1) === useLeg : true));
+  if (i >= 0) STORE.vias.splice(i, 1);
+  else STORE.vias.push({ id: d.id, name: d.name, lat: d.lat, lng: d.lng, leg: useLeg });
+  STORE.save(); renderPlan(); renderViaPins();
+}
+$("#meetup-toggle").addEventListener("change", e => {
+  STORE.meetup.enabled = e.target.checked; STORE.save(); renderPlan(); renderViaPins();
+});
 function renderPlanResults() {
   const box = $("#route-summary"); box.innerHTML = "";
   const r = STORE.route;
   if (r && r.geometry) {
     const gas = GEO.fuelStops(STORE.fuel.refuelEveryMi).length;
     const nights = GEO.overnightStops(450).length;
+    let legLine = "";
+    if (r.meetup) {
+      const mm = GEO.project(r.meetup.lat, r.meetup.lng).along;
+      legLine = '<div class="notice" style="background:#12233a;border-color:#2f6fb0;color:#cfe3ff;">' +
+        'Leg 1 (his drive): ' + GEO.fmtMi(mm) + ' to ' + r.meetup.name + '. ' +
+        'Leg 2 (together): ' + GEO.fmtMi(GEO.TOTAL - mm) + ' to Wilmington.</div>';
+    }
     box.innerHTML =
       (r.approx ? '<div class="notice">This is a straight-line estimate \u2014 connect to WiFi and build again for real roads.</div>' : '') +
+      legLine +
       '<div class="summaryBox">' +
       '<div><div class="k">Distance</div><div class="v">' + GEO.fmtMi(GEO.TOTAL) + '</div></div>' +
       '<div><div class="k">Driving time</div><div class="v">\u2248 ' + Math.round(GEO.drivingHours()) + ' h</div></div>' +
@@ -275,15 +325,9 @@ function renderPlanResults() {
     })));
   }
 }
-$("#addVia").addEventListener("click", () => {
-  mapMode = mapMode === "via" ? null : "via";
-  $("#addVia").classList.toggle("on", mapMode === "via");
-  if (mapMode === "via") { show("map"); $("#hint").textContent = "Tap the map to add a place to pass through"; $("#hint").classList.add("on"); }
-  else $("#hint").classList.remove("on");
-});
 $("#resetRoute").addEventListener("click", () => {
   STORE.route = null; STORE.vias = []; STORE.save();
-  loadActiveRoute(); drawRoute(); renderViaPins();
+  loadActiveRoute(); drawRoute(); renderViaPins(); renderMeetup();
   setProgress(0, "Home \u00b7 start of the trip");
   renderStops(); renderFuel(); renderPlan();
   $("#build-status").textContent = "Back to the plain I-40 route.";
@@ -300,8 +344,17 @@ function collapseSteps(osrmRoute) {
   return legs.filter(l => l.seg >= 1).map(l => ({ road: l.road, to: null, seg: Math.round(l.seg), cum: Math.round(l.cum), stops: [] }));
 }
 async function buildRoute() {
-  const ordered = STORE.vias.slice().sort((a, b) => a.lng - b.lng);
-  const pts = [BASE, ...ordered, DESTINATION];
+  const m = STORE.meetup;
+  const sortLng = arr => arr.slice().sort((a, b) => a.lng - b.lng);
+  let pts, meetObj = null;
+  if (m.enabled) {
+    const l1 = sortLng(STORE.vias.filter(v => (v.leg || 1) === 1));
+    const l2 = sortLng(STORE.vias.filter(v => v.leg === 2));
+    meetObj = { name: m.name, lat: m.lat, lng: m.lng };
+    pts = [BASE, ...l1, meetObj, ...l2, DESTINATION];
+  } else {
+    pts = [BASE, ...sortLng(STORE.vias), DESTINATION];
+  }
   const coords = pts.map(p => p.lng + "," + p.lat).join(";");
   const url = "https://router.project-osrm.org/route/v1/driving/" + coords +
     "?overview=simplified&geometries=geojson&steps=true";
@@ -321,19 +374,18 @@ async function buildRoute() {
       duration: rt.duration / 3600,
       legs: collapseSteps(rt),
       waypoints: pts.map(p => ({ name: p.name.replace(/^Home.*/, "Upland, CA"), lat: p.lat, lng: p.lng })),
-      approx: false, builtAt: Date.now()
+      meetup: meetObj, approx: false, builtAt: Date.now()
     };
     STORE.save(); loadActiveRoute(); drawRoute();
     setProgress(0, "Home \u00b7 start of the trip");
     renderStops(); renderFuel(); renderPlan();
     $("#build-status").textContent = "Route built and saved. It'll work offline from here on.";
   } catch (err) {
-    // offline fallback: straight lines through the chosen points
     STORE.route = {
       geometry: pts.map(p => [p.lat, p.lng]),
       distance: null, duration: null, legs: null,
       waypoints: pts.map(p => ({ name: p.name.replace(/^Home.*/, "Upland, CA"), lat: p.lat, lng: p.lng })),
-      approx: true, builtAt: Date.now()
+      meetup: meetObj, approx: true, builtAt: Date.now()
     };
     STORE.save(); loadActiveRoute(); drawRoute();
     setProgress(0, "Home \u00b7 start of the trip");

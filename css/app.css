@@ -183,3 +183,17 @@ h2.section{ font-size:1.15rem; font-weight:700; margin:4px 0 12px; }
 .notice{ background:#3a2f10; border:1px solid var(--amber); color:#ffe6a8; border-radius:10px;
   padding:10px 12px; font-size:.9rem; margin:12px 0; }
 .building{ opacity:.6; pointer-events:none; }
+
+/* ---------- two-leg planning ---------- */
+.leg{ margin:16px 0; border-top:1px solid #2c3a47; padding-top:14px; }
+.leg:first-child{ border-top:none; padding-top:4px; }
+.legTitle{ font-size:1.05rem; margin:0 0 10px; color:var(--amber); }
+.addViaBtn.on{ background:var(--amber); border-color:var(--amber); color:#3a2a00; }
+.switch{ display:flex; align-items:center; gap:12px; cursor:pointer; font-size:1.05rem; font-weight:600; }
+.switch input{ width:48px; height:28px; -webkit-appearance:none; appearance:none; background:var(--asphalt-2);
+  border:1.5px solid #3a4855; border-radius:999px; position:relative; cursor:pointer; flex:0 0 auto; }
+.switch input:checked{ background:var(--green); border-color:var(--green); }
+.switch input::after{ content:""; position:absolute; top:2px; left:2px; width:22px; height:22px;
+  border-radius:50%; background:#fff; transition:left .2s; }
+.switch input:checked::after{ left:22px; }
+.pin--meet{ background:var(--blue); border:3px solid var(--amber); width:18px; height:18px; border-radius:50%; }
